@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  openclaw:
+    image: openclaw/openclaw:latest
+    container_name: openclaw
+    ports:
+      - "18789:18789"
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - OPENCLAW_GATEWAY_TOKEN=${OPENCLAW_GATEWAY_TOKEN:-ocw_local_20260301}
+      - AUTH_PASSWORD=${AUTH_PASSWORD:-}
+      - AUTH_USERNAME=${AUTH_USERNAME:-admin}
+    volumes:
+      - ./workspace:/workspace
+      - openclaw-config:/root/.openclaw
+      - openclaw-data:/root/.openclaw/data
+    restart: unless-stopped
+    stdin_open: true
+    tty: true
+    networks:
+      - openclaw-net
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:18789/api/status"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # Optional: Ollama for local models
+  ollama:
+    image: ollama/ollama:latest
+    container_name: openclaw-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-data:/root/.ollama
+    restart: unless-stopped
+    networks:
+      - openclaw-net
+    deploy:
+      resources:
+        limits:
+          memory: 8G
+        reservations:
+          devices:
+            - capabilities: [gpu]
+
+volumes:
+  openclaw-config:
+  openclaw-data:
+  ollama-data:
+
+networks:
+  openclaw-net:
+    driver: bridge
