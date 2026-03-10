@@ -14,8 +14,8 @@ Security:
 $ErrorActionPreference = 'Stop'
 Write-Host "=== Feishu setup for OpenClaw ==="
 
-$appId = Read-Host "Enter Feishu App ID (cli_...)"
-$appSecret = Read-Host "Enter Feishu App Secret"
+$appId = if($env:FEISHU_APP_ID){ $env:FEISHU_APP_ID } else { Read-Host "Enter Feishu App ID (cli_...)" }
+$appSecret = if($env:FEISHU_APP_SECRET){ $env:FEISHU_APP_SECRET } else { Read-Host "Enter Feishu App Secret" }
 
 & openclaw config set channels.feishu.enabled true | Out-Null
 & openclaw config set channels.feishu.accounts.default.appId "$appId" | Out-Null

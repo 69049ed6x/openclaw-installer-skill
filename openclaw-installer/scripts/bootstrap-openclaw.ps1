@@ -72,8 +72,8 @@ if(-not $openclawOk){
 }
 
 Write-Host "\n=== Provider config ==="
-$apiKey = Read-Host "Enter your provider API key"
-$baseUrl = Read-Host "Enter API base URL (optional; press Enter to skip)"
+$apiKey = if($env:OPENCLAW_API_KEY){ $env:OPENCLAW_API_KEY } else { Read-Host "Enter your provider API key" }
+$baseUrl = if($env:OPENCLAW_BASE_URL){ $env:OPENCLAW_BASE_URL } else { Read-Host "Enter API base URL (optional; press Enter to skip)" }
 
 Write-Host "Writing config (env.vars)..." -ForegroundColor Yellow
 & openclaw config set env.vars.OPENAI_API_KEY "$apiKey" | Out-Null

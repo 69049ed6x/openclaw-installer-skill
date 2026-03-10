@@ -56,8 +56,15 @@ fi
 
 echo
 echo "=== Provider config ==="
-read -r -p "Enter your provider API key: " apiKey
-read -r -p "Enter API base URL (optional): " baseUrl
+apiKey="${OPENCLAW_API_KEY:-}"
+baseUrl="${OPENCLAW_BASE_URL:-}"
+
+if [[ -z "$apiKey" ]]; then
+  read -r -p "Enter your provider API key: " apiKey
+fi
+if [[ -z "$baseUrl" ]]; then
+  read -r -p "Enter API base URL (optional): " baseUrl
+fi
 
 openclaw config set env.vars.OPENAI_API_KEY "$apiKey" >/dev/null
 if [[ -n "$baseUrl" ]]; then
