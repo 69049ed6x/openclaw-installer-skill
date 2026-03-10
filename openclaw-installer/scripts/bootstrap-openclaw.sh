@@ -12,12 +12,14 @@ DRY_RUN=false
 SKIP_DOCKER_PROMPT=false
 
 OPEN_DASHBOARD=false
+PLUGINS="${OPENCLAW_PLUGINS:-}"
 
 for arg in "$@"; do
   case "$arg" in
     --dry-run) DRY_RUN=true ;;
     --skip-docker-prompt) SKIP_DOCKER_PROMPT=true ;;
     --open-dashboard) OPEN_DASHBOARD=true ;;
+    --plugins=*) PLUGINS="${arg#*=}" ;;
   esac
 done
 
@@ -72,6 +74,17 @@ fi
 openclaw config set env.vars.OPENAI_API_KEY "$apiKey" >/dev/null
 if [[ -n "$baseUrl" ]]; then
   openclaw config set env.vars.OPENAI_BASE_URL "$baseUrl" >/dev/null
+fi
+
+# Optional plugin installs (comma-separated)
+if [[ -n "$PLUGINS" ]]; then
+  IFS=',' read -r -a plist <<< "$PLUGINS"
+  echo "Installing plugins: $PLUGINS" >&2
+  for p in "${plist[@]}"; do
+    p_trim=$(echo "$p" | xargs)
+    [[ -z "$p_trim" ]] && continue
+    openclaw plugins install "$p_trim" >/dev/null 2>&1 || echo "Plugin install failed: $p_trim" >&2
+  done
 fi
 
 openclaw gateway restart >/dev/null 2>&1 || true

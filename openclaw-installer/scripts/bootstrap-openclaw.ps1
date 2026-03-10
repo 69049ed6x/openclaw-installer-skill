@@ -19,7 +19,8 @@ Security:
 param(
   [switch]$DryRun,
   [switch]$SkipDockerPrompt,
-  [switch]$OpenDashboard
+  [switch]$OpenDashboard,
+  [string]$Plugins
 )
 
 $ErrorActionPreference = 'Stop'
@@ -80,6 +81,18 @@ Write-Host "Writing config (env.vars)..." -ForegroundColor Yellow
 & openclaw config set env.vars.OPENAI_API_KEY "$apiKey" | Out-Null
 if(-not [string]::IsNullOrWhiteSpace($baseUrl)){
   & openclaw config set env.vars.OPENAI_BASE_URL "$baseUrl" | Out-Null
+}
+
+# Optional plugin installs (comma-separated, e.g. "@openclaw/feishu")
+$pluginsList = @()
+if($Plugins){ $pluginsList = $Plugins.Split(',') | ForEach-Object { $_.Trim() } | Where-Object { $_ } }
+elseif($env:OPENCLAW_PLUGINS){ $pluginsList = $env:OPENCLAW_PLUGINS.Split(',') | ForEach-Object { $_.Trim() } | Where-Object { $_ } }
+
+if($pluginsList.Count -gt 0){
+  Write-Host "Installing plugins: $($pluginsList -join ', ')" -ForegroundColor Yellow
+  foreach($p in $pluginsList){
+    try { & openclaw plugins install $p | Out-Null } catch { Write-Host "Plugin install failed: $p" -ForegroundColor Yellow }
+  }
 }
 
 Write-Host "Restarting gateway..." -ForegroundColor Yellow
