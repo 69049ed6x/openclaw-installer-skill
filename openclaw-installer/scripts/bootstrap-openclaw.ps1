@@ -16,6 +16,11 @@ Security:
 - Never hardcode tokens in this repo.
 #>
 
+param(
+  [switch]$DryRun,
+  [switch]$SkipDockerPrompt
+)
+
 $ErrorActionPreference = 'Stop'
 
 function Prompt-YesNo([string]$q, [bool]$default=$true) {
@@ -27,9 +32,17 @@ function Prompt-YesNo([string]$q, [bool]$default=$true) {
 
 Write-Host "=== OpenClaw Bootstrap (Windows) ==="
 
-$useDocker = Prompt-YesNo "Do you want to use Docker for OpenClaw?" $false
+$useDocker = $false
+if(-not $SkipDockerPrompt){
+  $useDocker = Prompt-YesNo "Do you want to use Docker for OpenClaw?" $false
+}
 if($useDocker){
   Write-Host "Docker chosen. Follow: openclaw-installer/docs/docker.md" -ForegroundColor Yellow
+}
+
+if($DryRun){
+  Write-Host "[DryRun] Would check/install Node 22+, install OpenClaw, write config, restart gateway." -ForegroundColor Cyan
+  exit 0
 }
 
 # Node 22+ check

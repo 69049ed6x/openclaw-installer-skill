@@ -8,6 +8,17 @@
 
 set -euo pipefail
 
+DRY_RUN=false
+SKIP_DOCKER_PROMPT=false
+
+for arg in "$@"; do
+  case "$arg" in
+    --dry-run) DRY_RUN=true ;;
+    --skip-docker-prompt) SKIP_DOCKER_PROMPT=true ;;
+  esac
+done
+
+
 yesno() {
   local prompt="$1"; local def="$2"; local ans
   read -r -p "$prompt [$def] " ans || true
@@ -17,8 +28,13 @@ yesno() {
 
 echo "=== OpenClaw Bootstrap (macOS/Linux/WSL2) ==="
 
-if yesno "Do you want to use Docker for OpenClaw?" "n"; then
+if ! $SKIP_DOCKER_PROMPT && yesno "Do you want to use Docker for OpenClaw?" "n"; then
   echo "Docker chosen. Follow: openclaw-installer/docs/docker.md" >&2
+fi
+
+if $DRY_RUN; then
+  echo "[DryRun] Would check Node 22+, install OpenClaw, write config, restart gateway."
+  exit 0
 fi
 
 # Node 22+ check
