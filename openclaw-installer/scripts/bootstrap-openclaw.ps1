@@ -18,7 +18,8 @@ Security:
 
 param(
   [switch]$DryRun,
-  [switch]$SkipDockerPrompt
+  [switch]$SkipDockerPrompt,
+  [switch]$OpenDashboard
 )
 
 $ErrorActionPreference = 'Stop'
@@ -89,3 +90,6 @@ Write-Host "Running checks..." -ForegroundColor Yellow
 & openclaw doctor
 
 Write-Host "\nOpen dashboard UI: openclaw dashboard" -ForegroundColor Green
+if($OpenDashboard){
+  try { & openclaw dashboard } catch { Write-Host "openclaw dashboard failed." -ForegroundColor Yellow }
+}

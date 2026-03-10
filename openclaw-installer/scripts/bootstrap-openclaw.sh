@@ -11,10 +11,13 @@ set -euo pipefail
 DRY_RUN=false
 SKIP_DOCKER_PROMPT=false
 
+OPEN_DASHBOARD=false
+
 for arg in "$@"; do
   case "$arg" in
     --dry-run) DRY_RUN=true ;;
     --skip-docker-prompt) SKIP_DOCKER_PROMPT=true ;;
+    --open-dashboard) OPEN_DASHBOARD=true ;;
   esac
 done
 
@@ -77,3 +80,11 @@ openclaw doctor
 
 echo
 echo "Open dashboard UI: openclaw dashboard"
+if $OPEN_DASHBOARD; then
+  # Best effort open. Works on macOS with `open`, Linux with `xdg-open`.
+  if command -v open >/dev/null 2>&1; then
+    open "http://127.0.0.1:18789/" || true
+  elif command -v xdg-open >/dev/null 2>&1; then
+    xdg-open "http://127.0.0.1:18789/" || true
+  fi
+fi
